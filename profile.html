@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My profile - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="content">
+
+  <div class="profile-head">
+    <div>
+      <div class="profile-name" th:text="${me.name}"></div>
+      <div class="muted"><span th:text="${me.hostel}"></span> &middot; <span th:text="${me.email}"></span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat"><b th:text="${avgRating == null ? 'None yet' : avgRating + ' / 5'}"></b><span>Average rating</span></div>
+      <div class="stat"><b th:text="${sellerDeals}"></b><span>Completed sales</span></div>
+    </div>
+  </div>
+
+  <div class="card-box" style="margin-top:24px;">
+    <form th:action="@{/profile}" method="post">
+      <div class="form-group"><label>Name</label><input name="name" th:value="${me.name}" required></div>
+      <div class="form-group"><label>Email</label><input th:value="${me.email}" disabled></div>
+      <div class="form-group"><label>Hostel</label><input name="hostel" th:value="${me.hostel}" required></div>
+      <button class="btn btn-sm">Save changes</button>
+    </form>
+  </div>
+
+  <h2 class="section-title">My listings</h2>
+  <div th:each="it : ${myItems}" class="row-card">
+    <div>
+      <strong th:text="${it.title}"></strong>
+      <div class="muted">&#8377;<span th:text="${it.price}"></span> &middot; <span class="badge" th:text="${it.status}"></span></div>
+    </div>
+    <div class="row-actions" th:if="${it.status == 'AVAILABLE'}">
+      <a class="btn btn-outline btn-sm" th:href="@{/edit-item/{id}(id=${it.id})}">Edit</a>
+      <form method="post" th:action="@{/delete-item/{id}(id=${it.id})}" onsubmit="return confirm('Delete this listing?')">
+        <button class="btn btn-danger btn-sm">Delete</button>
+      </form>
+    </div>
+  </div>
+  <div th:if="${myItems.isEmpty()}" class="empty-card">
+    <h3>No listings yet</h3>
+    <p class="muted">Have a textbook, calculator or cycle you no longer need? List it for other students.</p>
+    <a th:href="@{/add-item}" class="btn">List an item</a>
+  </div>
+
+  <h2 class="section-title">Feedback received</h2>
+  <div th:each="r : ${ratings}" class="row-card">
+    <div><strong><span th:text="${r.score}"></span> / 5</strong> &middot; <span th:text="${r.comment}"></span>
+      <div class="muted">by <span th:text="${r.rater.name}"></span></div></div>
+  </div>
+  <div th:if="${ratings.isEmpty()}" class="empty-card">
+    <h3>No feedback yet</h3>
+    <p class="muted">Ratings appear here after a completed deal.</p>
+  </div>
+</div>
+</body>
+</html>

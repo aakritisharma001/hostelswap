@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deal Chat - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="content">
+  <h2 class="section-title">Deal Chat</h2>
+  <div class="card-box">
+    <strong th:text="${req.item.title}"></strong>
+    <div class="muted">
+      Price &#8377;<span th:text="${req.offerPrice}"></span> &middot;
+      With <span th:text="${me.id == req.buyer.id ? req.seller.name : req.buyer.name}"></span> &middot;
+      <span class="badge" th:text="${req.status}"></span>
+    </div>
+    <a th:href="@{/chat/{id}(id=${req.id})}" class="btn btn-outline btn-sm" style="margin-top:10px;">Refresh messages</a>
+  </div>
+
+  <div class="chat-box">
+    <div th:each="msg : ${messages}" th:classappend="${msg.sender.id == me.id} ? 'mine' : 'theirs'" class="bubble">
+      <div class="who" th:text="${msg.sender.id == me.id} ? 'You' : ${msg.sender.name}"></div>
+      <div th:if="${msg.type == 'MEETING'}" class="tag-line">Meeting proposal</div>
+      <div th:if="${msg.type == 'PHONE'}" class="tag-line">Phone number shared</div>
+      <div th:if="${msg.type == 'PHONE_DECLINED'}" class="tag-line">Phone number not shared</div>
+      <div th:text="${msg.body}"></div>
+      <div class="time" th:text="${#temporals.format(msg.createdAt, 'dd MMM HH:mm')}"></div>
+    </div>
+    <p th:if="${messages.isEmpty()}" class="muted">No messages yet. Start with a meeting proposal or a message below.</p>
+  </div>
+
+  <div th:if="${chatOpen}" class="chat-actions">
+    <div class="card-box">
+      <h3 class="section-title" style="margin-top:0;">Propose a meeting</h3>
+      <form method="post" th:action="@{/chat/{id}/send(id=${req.id})}" class="inline-wrap">
+        <input type="hidden" name="type" value="meeting">
+        <input type="text" name="place" placeholder="Place, e.g. Library gate" required>
+        <input type="datetime-local" name="time" required>
+        <button class="btn btn-sm">Send meeting</button>
+      </form>
+    </div>
+
+    <div class="card-box">
+      <h3 class="section-title" style="margin-top:0;">Phone number</h3>
+      <form method="post" th:action="@{/chat/{id}/send(id=${req.id})}" class="inline-wrap">
+        <input type="hidden" name="type" value="phone">
+        <input type="tel" name="phone" placeholder="+91XXXXXXXXXX" required>
+        <button class="btn btn-sm">Share my number</button>
+      </form>
+      <form method="post" th:action="@{/chat/{id}/send(id=${req.id})}" style="margin-top:10px;">
+        <input type="hidden" name="type" value="phone-decline">
+        <button class="btn btn-outline btn-sm">I don't want to share my number</button>
+      </form>
+    </div>
+
+    <div class="card-box">
+      <h3 class="section-title" style="margin-top:0;">Message</h3>
+      <form method="post" th:action="@{/chat/{id}/send(id=${req.id})}" class="inline-wrap">
+        <input type="hidden" name="type" value="text">
+        <input type="text" name="text" maxlength="500" placeholder="Type a message" required style="flex:1;">
+        <button class="btn btn-sm">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <p th:unless="${chatOpen}" class="muted">This deal is <span th:text="${req.status}"></span>. The chat is read-only.</p>
+  <p><a th:href="@{/requests}" class="muted">Back to requests</a></p>
+</div>
+<script>
+  // Reload the chat every 8 seconds, but only when nobody is typing
+  setInterval(function () {
+    var typing = Array.prototype.some.call(document.querySelectorAll('input[type=text], input[type=tel]'),
+      function (i) { return i.value.trim() !== ''; });
+    if (!typing) location.reload();
+  }, 8000);
+</script>
+</body>
+</html>

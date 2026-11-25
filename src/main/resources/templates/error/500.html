@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Something went wrong - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div class="empty-state">
+  <div class="error-code">500</div>
+  <h2 class="section-title">Something went wrong on our side</h2>
+  <p class="muted">Please try again in a moment. If it keeps happening, let the admin know.</p>
+  <a th:href="@{/dashboard}" class="btn" style="margin-top:18px;">Back to the shop</a>
+</div>
+</body>
+</html>

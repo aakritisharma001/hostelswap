@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+
+<section class="hero">
+  <h1>Buy, sell and swap<br>with your hostel</h1>
+  <p>Textbooks, calculators, cycles and more, from verified Thapar students.</p>
+  <form class="search" th:action="@{/dashboard}" method="get">
+    <input type="text" name="q" placeholder="Search books, cycles, calculators..." th:value="${q}">
+    <input type="hidden" name="category" th:value="${selected}">
+    <input type="hidden" name="sort" th:value="${sort}">
+    <button class="btn" type="submit">Search</button>
+  </form>
+</section>
+
+<div class="content">
+  <div class="chips">
+    <a th:href="@{/dashboard}" class="chip" th:classappend="${selected == 0} ? 'active' : ''">All</a>
+    <a th:each="cat : ${categories}" th:href="@{/dashboard(category=${cat.id})}"
+       class="chip" th:classappend="${selected == cat.id} ? 'active' : ''" th:text="${cat.name}"></a>
+  </div>
+
+  <form class="filter-row" th:action="@{/dashboard}" method="get">
+    <input type="hidden" name="q" th:value="${q}">
+    <input type="hidden" name="category" th:value="${selected}">
+    <select name="sort">
+      <option value="newest" th:selected="${sort == 'newest'}">Newest</option>
+      <option value="price_asc" th:selected="${sort == 'price_asc'}">Price: low to high</option>
+      <option value="price_desc" th:selected="${sort == 'price_desc'}">Price: high to low</option>
+    </select>
+    <input type="number" name="minPrice" min="0" step="1" placeholder="Min &#8377;" th:value="${minPrice}">
+    <input type="number" name="maxPrice" min="0" step="1" placeholder="Max &#8377;" th:value="${maxPrice}">
+    <button class="btn btn-sm" type="submit">Apply</button>
+  </form>
+
+  <div class="item-grid">
+    <a th:each="item : ${items}" th:href="@{/item/{id}(id=${item.id})}" class="item-card">
+      <div class="img-wrap">
+        <img th:if="${item.imagePath}" th:src="@{${item.imagePath}}" th:alt="${item.title}">
+        <div th:unless="${item.imagePath}" class="no-image">No photo</div>
+      </div>
+      <div class="info">
+        <h3 th:text="${item.title}"></h3>
+        <span>&#8377;<span th:text="${item.price}"></span></span>
+      </div>
+      <div class="meta"><span th:text="${item.category.name}"></span> &middot; <span th:text="${item.condition}"></span></div>
+    </a>
+  </div>
+
+  <div th:if="${items.isEmpty()}" class="empty-state">
+    <h2 class="section-title">Nothing here yet</h2>
+    <p class="muted">No listings match your search. Try a different filter, or be the first to list something.</p>
+    <a th:href="@{/add-item}" class="btn" style="margin-top:16px;">List an item</a>
+  </div>
+</div>
+</body>
+</html>

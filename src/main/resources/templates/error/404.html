@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page not found - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div class="empty-state">
+  <div class="error-code">404</div>
+  <h2 class="section-title">We couldn't find that page</h2>
+  <p class="muted">The link may be old, or the listing may have been removed.</p>
+  <a th:href="@{/dashboard}" class="btn" style="margin-top:18px;">Back to the shop</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="nav" class="navbar">
+  <a th:href="@{/dashboard}" class="logo"><span class="mark">&#8644;</span>HostelSwap</a>
+  <nav th:if="${me}">
+    <a th:href="@{/dashboard}">Shop</a>
+    <a th:href="@{/add-item}">Sell</a>
+    <a th:href="@{/requests}">Requests <span class="count" th:if="${pendingCount > 0}" th:text="${pendingCount}"></span></a>
+    <a th:href="@{/history}">History</a>
+    <a th:href="@{/profile}">Profile</a>
+    <a th:if="${me.admin}" th:href="@{/admin}">Admin</a>
+  </nav>
+  <div class="nav-right">
+    <span th:if="${me}" class="hi" th:text="${me.name}"></span>
+    <a th:if="${me}" th:href="@{/logout}" class="btn btn-outline btn-sm">Logout</a>
+    <a th:unless="${me}" th:href="@{/login}" class="btn btn-sm">Log in</a>
+  </div>
+</div>
+<!-- Toast messages: appear bottom-right and fade out by themselves -->
+<div th:fragment="flash">
+  <div th:if="${flash}" class="toast success" th:text="${flash}"></div>
+  <div th:if="${flashErr}" class="toast error" th:text="${flashErr}"></div>
+</div>
+</body>
+</html>

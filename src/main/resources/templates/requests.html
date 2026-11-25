@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Requests - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="content">
+  <h2 class="section-title">Requests &amp; Negotiations</h2>
+  <div th:each="r : ${myRequests}" class="row-card wrap">
+    <div>
+      <strong th:text="${r.item.title}"></strong>
+      <div class="muted">
+        <span th:text="${r.seller.id == me.id ? 'Buyer: ' + r.buyer.name : 'Seller: ' + r.seller.name}"></span>
+        &middot; Price &#8377;<span th:text="${r.offerPrice}"></span>
+        &middot; <span class="badge" th:text="${r.status}"></span>
+      </div>
+    </div>
+    <div class="row-actions">
+        <a th:if="${r.status == 'ACCEPTED' or r.status == 'COMPLETED'}" th:href="@{/chat/{id}(id=${r.id})}" class="btn btn-sm">Open chat</a>
+      <th:block th:if="${(r.status == 'PENDING' or r.status == 'COUNTERED') and r.lastActorId != me.id}">
+        <form method="post" th:action="@{/respond-request}">
+          <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="accept">
+          <button class="btn btn-sm">Accept</button>
+        </form>
+        <form method="post" th:action="@{/respond-request}">
+          <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="reject">
+          <button class="btn btn-danger btn-sm">Reject</button>
+        </form>
+        <form method="post" th:action="@{/respond-request}" class="inline">
+          <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="counter">
+          <input type="number" name="counterPrice" min="1" step="0.01" placeholder="Counter &#8377;" required>
+          <button class="btn btn-outline btn-sm">Counter</button>
+        </form>
+      </th:block>
+      <span th:if="${(r.status == 'PENDING' or r.status == 'COUNTERED') and r.lastActorId == me.id}" class="muted">Waiting for reply</span>
+      <th:block th:if="${r.status == 'ACCEPTED'}">
+        <form th:if="${r.seller.id == me.id}" method="post" th:action="@{/sale-action}" onsubmit="return confirm('Mark this item as sold?')">
+          <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="complete">
+          <button class="btn btn-sm">Mark sold</button>
+        </form>
+        <form method="post" th:action="@{/sale-action}" onsubmit="return confirm('Cancel this deal?')">
+          <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="cancel">
+          <button class="btn btn-outline btn-sm">Cancel deal</button>
+        </form>
+      </th:block>
+    </div>
+  </div>
+  <div th:if="${myRequests.isEmpty()}" class="empty-card"><h3>No requests yet</h3><p class="muted">Find something in the shop and send an offer.</p><a th:href="@{/dashboard}" class="btn">Browse the shop</a></div>
+</div>
+</body>
+</html>

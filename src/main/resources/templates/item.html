@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${item.title} + ' - HostelSwap'"></title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+
+<div class="detail-wrap">
+  <div class="detail-img">
+    <img th:if="${item.imagePath}" th:src="@{${item.imagePath}}" th:alt="${item.title}">
+  </div>
+  <div class="detail-info">
+    <h1 th:text="${item.title}"></h1>
+    <div class="price">&#8377;<span th:text="${item.price}"></span></div>
+    <span class="tag" th:text="${item.category.name}"></span>
+    <span class="tag" th:text="${item.condition}"></span>
+    <p style="margin:16px 0;" th:text="${item.description}"></p>
+    <p class="muted">
+      Seller <strong th:text="${item.seller.name}"></strong> &middot; <span th:text="${item.seller.hostel}"></span><br>
+      Rating: <strong th:text="${sellerRating == null ? 'No ratings yet' : sellerRating + ' / 5'}"></strong><br>
+      Completed deals: <strong th:text="${sellerDeals}"></strong>
+    </p>
+
+    <div th:if="${item.seller.id == me.id}" class="card-box" style="margin-top:20px;">
+      This is your listing.
+    </div>
+
+    <div th:unless="${item.seller.id == me.id}">
+      <div th:if="${item.status != 'AVAILABLE'}" class="card-box" style="margin-top:20px;">
+        This item is <span th:text="${item.status}"></span>.
+      </div>
+      <form th:if="${item.status == 'AVAILABLE'}" class="card-box" method="post" th:action="@{/send-request}" style="margin-top:20px;">
+        <input type="hidden" name="itemId" th:value="${item.id}">
+        <div class="form-group"><label>Your offer (&#8377;)</label>
+          <input type="number" name="offerPrice" min="1" step="0.01" th:value="${item.price}" required></div>
+        <button class="btn">Send request</button>
+      </form>
+
+      <details class="report-box">
+        <summary>Report this listing</summary>
+        <form method="post" th:action="@{/report/{id}(id=${item.id})}" class="inline-wrap" style="margin-top:10px;">
+          <input type="text" name="reason" maxlength="255" placeholder="Reason, e.g. fake or inappropriate" required>
+          <button class="btn btn-danger btn-sm">Send report</button>
+        </form>
+      </details>
+    </div>
+  </div>
+</div>
+</body>
+</html>

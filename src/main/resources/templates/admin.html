@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="content">
+  <h2 class="section-title">Overview</h2>
+  <div class="stat-grid">
+    <div class="stat"><b th:text="${statUsers}"></b><span>Users</span></div>
+    <div class="stat"><b th:text="${statListings}"></b><span>Active listings</span></div>
+    <div class="stat"><b th:text="${statDeals}"></b><span>Completed deals</span></div>
+    <div class="stat"><b th:text="${statReports}"></b><span>Open reports</span></div>
+    <div class="stat"><b th:text="${statAvgRating}"></b><span>Average rating</span></div>
+  </div>
+
+  <h2 class="section-title">Reported listings</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Listing</th><th>Reported by</th><th>Reason</th><th></th></tr>
+      <tr th:each="r : ${reports}">
+        <td th:text="${r.item.title}"></td>
+        <td th:text="${r.reporter.name}"></td>
+        <td th:text="${r.reason}"></td>
+        <td>
+          <form method="post" th:action="@{/admin-action}" class="inline" onsubmit="return confirm('Remove this listing?')">
+            <input type="hidden" name="id" th:value="${r.item.id}"><input type="hidden" name="action" value="delete-item">
+            <button class="btn btn-danger btn-sm">Remove listing</button>
+          </form>
+          <form method="post" th:action="@{/admin-action}" class="inline">
+            <input type="hidden" name="id" th:value="${r.id}"><input type="hidden" name="action" value="dismiss-report">
+            <button class="btn btn-outline btn-sm">Dismiss</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+    <p th:if="${reports.isEmpty()}" class="muted" style="padding:16px;">No reports to review.</p>
+  </div>
+
+  <h2 class="section-title">Users</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Name</th><th>Email</th><th>Hostel</th><th>Role</th><th>Status</th><th></th></tr>
+      <tr th:each="u : ${users}">
+        <td th:text="${u.name}"></td><td th:text="${u.email}"></td><td th:text="${u.hostel}"></td>
+        <td th:text="${u.role}"></td>
+        <td th:text="${u.blocked} ? 'Blocked' : 'Active'"></td>
+        <td>
+          <form th:unless="${u.admin}" method="post" th:action="@{/admin-action}" class="inline">
+            <input type="hidden" name="id" th:value="${u.id}">
+            <input type="hidden" name="action" th:value="${u.blocked} ? 'unblock' : 'block'">
+            <button class="btn btn-sm" th:classappend="${u.blocked} ? '' : 'btn-danger'"
+                    th:text="${u.blocked} ? 'Unblock' : 'Block'"></button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <h2 class="section-title">Listings</h2>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Title</th><th>Seller</th><th>Price</th><th>Status</th><th></th></tr>
+      <tr th:each="it : ${items}">
+        <td th:text="${it.title}"></td><td th:text="${it.seller.name}"></td>
+        <td>&#8377;<span th:text="${it.price}"></span></td><td th:text="${it.status}"></td>
+        <td>
+          <form method="post" th:action="@{/admin-action}" class="inline" onsubmit="return confirm('Remove this listing?')">
+            <input type="hidden" name="id" th:value="${it.id}"><input type="hidden" name="action" value="delete-item">
+            <button class="btn btn-danger btn-sm">Remove</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

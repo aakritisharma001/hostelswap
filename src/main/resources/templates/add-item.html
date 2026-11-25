@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell an Item - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="form-card">
+  <h2>List an Item</h2>
+  <form th:action="@{/add-item}" method="post" enctype="multipart/form-data">
+    <div class="form-group"><label>Item Title</label><input type="text" name="title" required></div>
+    <div class="form-group"><label>Description</label><textarea name="description" rows="3"></textarea></div>
+    <div class="form-group"><label>Category</label>
+      <select name="category" required>
+        <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"></option>
+      </select></div>
+    <div class="form-group"><label>Price (&#8377;)</label>
+      <input type="number" name="price" min="1" step="0.01" required></div>
+    <div class="form-group"><label>Condition</label>
+      <select name="condition">
+        <option value="NEW">New</option>
+        <option value="GOOD">Good</option>
+        <option value="USED">Used</option>
+        <option value="FOR_PARTS">For Parts</option>
+      </select></div>
+    <div class="form-group"><label>Photo</label>
+      <input type="file" name="image" id="photo" accept="image/*">
+      <small class="muted" th:text="${'Maximum file size: ' + maxPhotoMb + ' MB'}"></small>
+      <small id="photoInfo" class="muted" style="display:none;margin-top:6px;"></small>
+      <div id="photoWarn" class="error-msg" style="display:none;margin-top:8px;"></div>
+    </div>
+    <button type="submit" class="btn" style="width:100%;">List Item</button>
+  </form>
+</div>
+<script th:inline="javascript">
+  var MAX_MB = /*[[${maxPhotoMb}]]*/ 5;
+  document.getElementById('photo').addEventListener('change', function () {
+    var info = document.getElementById('photoInfo');
+    var warn = document.getElementById('photoWarn');
+    var file = this.files[0];
+    warn.style.display = 'none';
+    info.style.display = 'none';
+    if (!file) return;
+    var mb = (file.size / 1048576).toFixed(1);
+    if (file.size > MAX_MB * 1048576) {
+      warn.textContent = 'This file is ' + mb + ' MB, which exceeds the ' + MAX_MB + ' MB limit. Please choose a smaller photo.';
+      warn.style.display = 'block';
+      this.value = '';
+    } else {
+      info.textContent = 'Selected: ' + file.name + ' (' + mb + ' MB)';
+      info.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>

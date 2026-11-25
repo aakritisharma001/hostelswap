@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign up - HostelSwap</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div th:replace="~{header :: nav}"></div>
+<div th:replace="~{header :: flash}"></div>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand"><span class="mark">&#8644;</span>HostelSwap</div>
+    <h2>Create your account</h2>
+    <p class="muted">Only @thapar.edu email addresses can sign up.</p>
+    <div style="height:18px;"></div>
+    <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+    <form th:action="@{/register}" method="post">
+      <div class="form-group"><label>Full name</label>
+        <input type="text" name="name" th:value="${name}" required></div>
+      <div class="form-group"><label>Thapar email</label>
+        <input type="email" name="email" th:value="${email}" placeholder="yourname@thapar.edu" required></div>
+      <div class="form-group"><label>Hostel</label>
+        <input type="text" name="hostel" th:value="${hostel}" placeholder="e.g. Hostel A" required></div>
+      <div class="form-group"><label>Password</label>
+        <input type="password" name="password" minlength="6" required></div>
+      <div class="form-group"><label>Confirm password</label>
+        <input type="password" name="confirmPassword" minlength="6" required></div>
+      <button type="submit" class="btn">Sign up</button>
+    </form>
+    <p class="switch">Already have an account? <a th:href="@{/login}">Log in</a></p>
+  </div>
+</div>
+</body>
+</html>

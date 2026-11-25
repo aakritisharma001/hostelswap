@@ -52,7 +52,7 @@
   <h2 class="section-title">Feedback received</h2>
   <div th:each="r : ${ratings}" class="row-card">
     <div><strong><span th:text="${r.score}"></span> / 5</strong> &middot; <span th:text="${r.comment}"></span>
-      <div class="muted">by <span th:text="${r.raterName}"></span></div></div>
+      <div class="muted">by <span th:text="${r.rater.name}"></span></div></div>
   </div>
   <div th:if="${ratings.isEmpty()}" class="empty-card">
     <h3>No feedback yet</h3>

@@ -6,14 +6,19 @@ import com.hostelswap.model.User;
 import com.hostelswap.repository.CategoryRepository;
 import com.hostelswap.repository.ItemRepository;
 import com.hostelswap.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
-// Adds a few sample sellers and listings the first time the app starts, so the shop is not empty.
-// Runs only once: it stops if the demo seller accounts already exist.
+// Runs every time the app starts.
+// 1. Makes sure the admin account exists (needed on Render, where the database is wiped on restart).
+//    The admin email comes from hostelswap.admin-email, and the password from hostelswap.admin-password
+//    (on Render: environment variables HOSTELSWAP_ADMINEMAIL and HOSTELSWAP_ADMINPASSWORD).
+//    If no admin password is set, no admin account is created here, and the admin registers normally.
+// 2. Adds a few sample sellers and listings the first time, so the shop is not empty.
 // Demo logins: ravi.demo@thapar.edu, priya.demo@thapar.edu, arjun.demo@thapar.edu (password: demo123)
 @Component
 public class DemoDataSeeder implements CommandLineRunner {
@@ -21,16 +26,24 @@ public class DemoDataSeeder implements CommandLineRunner {
     private final UserRepository users;
     private final ItemRepository items;
     private final CategoryRepository categories;
+    private final String adminEmail;
+    private final String adminPassword;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public DemoDataSeeder(UserRepository users, ItemRepository items, CategoryRepository categories) {
+    public DemoDataSeeder(UserRepository users, ItemRepository items, CategoryRepository categories,
+                          @Value("${hostelswap.admin-email:}") String adminEmail,
+                          @Value("${hostelswap.admin-password:}") String adminPassword) {
         this.users = users;
         this.items = items;
         this.categories = categories;
+        this.adminEmail = adminEmail == null ? "" : adminEmail.trim().toLowerCase();
+        this.adminPassword = adminPassword == null ? "" : adminPassword;
     }
 
     @Override
     public void run(String... args) {
+        ensureAdmin();
+
         if (users.findByEmail(MARKER_EMAIL).isPresent()) return;
 
         User ravi = seller("Ravi Kumar", "ravi.demo@thapar.edu", "Hostel A");
@@ -53,6 +66,27 @@ public class DemoDataSeeder implements CommandLineRunner {
                 "Other", "3500", "GOOD", "/demo/fridge.svg", ravi);
         add("Wireless Earphones", "Battery lasts about 5 hours. Comes with the charging case.",
                 "Electronics", "900", "USED", "/demo/earphones.svg", priya);
+    }
+
+    // Creates the admin account if it is missing, or gives the ADMIN role to an existing account with that email.
+    private void ensureAdmin() {
+        if (adminEmail.isEmpty()) return;
+        User existing = users.findByEmail(adminEmail).orElse(null);
+        if (existing != null) {
+            if (!existing.isAdmin()) {
+                existing.setRole("ADMIN");
+                users.save(existing);
+            }
+            return;
+        }
+        if (adminPassword.isBlank()) return;
+        User admin = new User();
+        admin.setName("Admin");
+        admin.setEmail(adminEmail);
+        admin.setHostel("Admin");
+        admin.setPassword(encoder.encode(adminPassword));
+        admin.setRole("ADMIN");
+        users.save(admin);
     }
 
     private User seller(String name, String email, String hostel) {

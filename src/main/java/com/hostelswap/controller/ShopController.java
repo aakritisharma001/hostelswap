@@ -8,6 +8,8 @@ import com.hostelswap.repository.ItemRepository;
 import com.hostelswap.repository.RatingRepository;
 import com.hostelswap.repository.SaleRepository;
 import com.hostelswap.repository.UserRepository;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -96,7 +98,9 @@ public class ShopController {
         it.setPrice(price);
         it.setCondition(condition);
         it.setSeller(me);
-        it.setImagePath(saveImage(image));
+        applyImage(it, image);
+        items.save(it);
+        it.setImagePath("/item-image/" + it.getId());
         items.save(it);
         ra.addFlashAttribute("flash", "Listing created.");
         return "redirect:/dashboard";
@@ -134,8 +138,12 @@ public class ShopController {
         it.setCategory(categories.findById(category).orElseThrow());
         it.setPrice(price);
         it.setCondition(condition);
-        if (image != null && !image.isEmpty()) it.setImagePath(saveImage(image));
+        applyImage(it, image);
         items.save(it);
+        if (image != null && !image.isEmpty()) {
+            it.setImagePath("/item-image/" + it.getId());
+            items.save(it);
+        }
         ra.addFlashAttribute("flash", "Listing updated.");
         return "redirect:/profile";
     }
@@ -175,6 +183,24 @@ public class ShopController {
             ra.addFlashAttribute("flash", "Profile updated.");
         }
         return "redirect:/profile";
+    }
+
+    // Keeps the uploaded photo bytes on the item, so they are stored in the database
+    private void applyImage(Item it, MultipartFile image) throws IOException {
+        if (image == null || image.isEmpty()) return;
+        it.setImageData(image.getBytes());
+        it.setImageType(image.getContentType() == null ? "image/jpeg" : image.getContentType());
+    }
+
+    // Serves a listing's photo from the database
+    @GetMapping("/item-image/{id}")
+    public ResponseEntity<byte[]> itemImage(@PathVariable Long id) {
+        return items.findById(id)
+                .filter(i -> i.getImageData() != null)
+                .map(i -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(i.getImageType() == null ? "image/jpeg" : i.getImageType()))
+                        .body(i.getImageData()))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // Saves an uploaded photo into the uploads folder and returns its web path

@@ -3,6 +3,8 @@ package com.hostelswap.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 public class Item {
@@ -14,6 +16,10 @@ public class Item {
     @Column(name = "item_condition") private String condition;
     private String status = "AVAILABLE"; // AVAILABLE / RESERVED / SOLD
     private String imagePath;
+    // The photo itself is kept in the database, so it survives server restarts
+    @JdbcTypeCode(SqlTypes.VARBINARY) @Column(length = 6000000)
+    private byte[] imageData;
+    private String imageType;
     @ManyToOne(optional = false) private User seller;
     private boolean deleted;
     private LocalDateTime createdAt;
@@ -30,4 +36,6 @@ public class Item {
     public User getSeller() { return seller; } public void setSeller(User seller) { this.seller = seller; }
     public boolean isDeleted() { return deleted; } public void setDeleted(boolean deleted) { this.deleted = deleted; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public byte[] getImageData() { return imageData; } public void setImageData(byte[] d) { this.imageData = d; }
+    public String getImageType() { return imageType; } public void setImageType(String t) { this.imageType = t; }
 }
